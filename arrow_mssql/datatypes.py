@@ -1,5 +1,26 @@
 import pyarrow as pa
-   
+from uuid import UUID
+
+
+class UuidScalarType(pa.ExtensionScalar):
+    def as_py(self):
+        return None if self.value is None else UUID(bytes=self.value.as_py())
+
+
+class UuidType(pa.ExtensionType):
+    def __init__(self):
+        super().__init__(pa.binary(16), 'pacote.UuidType')
+
+    def __arrow_ext_scalar_class__(self):
+        return UuidScalarType
+
+    def __arrow_ext_serialize__(self):
+        return b''
+
+    @classmethod
+    def __arrow_ext_deserialize__(cls, storage_type, serialized):
+        return cls()
+
 
 def decimal_arrow(
     precision, 
@@ -50,6 +71,10 @@ def timestamp_arrow(
         return pa.timestamp('ns')
 
 
+# NOTE: Ainda em testes @EXPERIMENTAL
+UUID_TYPE_ARROW = UuidType()
+pa.register_extension_type(UUID_TYPE_ARROW)
+
 map_typs = {
     'int': pa.int32(),
     'bit': pa.bool_(),
@@ -78,5 +103,5 @@ map_typs = {
     'smallmoney': pa.int32(),
     'tinyint': pa.int8(),
     'time': time_arrow,
-    'uniqueidentifier': pa.binary(16)
+    'uniqueidentifier': pa.string()
 }

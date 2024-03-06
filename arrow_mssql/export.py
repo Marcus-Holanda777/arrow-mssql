@@ -51,7 +51,7 @@ def to_arrow_lotes(
         query
     )
     array_type = schema('st')
-
+    
     arrays = (
         pa.array(map(tuple, lote), type=array_type)
         for lote in cursor_arrow(
