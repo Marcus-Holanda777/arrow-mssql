@@ -43,14 +43,14 @@ def to_arrow_lotes(
     limit: int = 1_000_000
 ) -> pa.ipc.RecordBatchReader:
     
-    schema = get_schema(
+    schema_arrow = get_schema(
         driver, 
         name, 
         database, 
         schema, 
         query
     )
-    array_type = schema('st')
+    array_type = schema_arrow('st')
     
     arrays = (
         pa.array(map(tuple, lote), type=array_type)
@@ -70,7 +70,7 @@ def to_arrow_lotes(
     )
 
     return pa.ipc.RecordBatchReader.from_batches(
-        schema('sh'), 
+        schema_arrow('sh'), 
         lotes
     )
 
