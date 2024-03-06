@@ -1,23 +1,5 @@
 import pyarrow as pa
-
-
-class UuidType(pa.ExtensionType):
-    def __init__(self):
-        super().__init__(pa.binary(16), "uuid_tipo.uuid")
-    
-    def __arrow_ext_serialize__(self):
-        return b''
-    
-    @classmethod
-    def __arrow_ext_deserialize__(cls, storage_type, serialized):
-        assert storage_type == pa.binary(16)
-        assert serialized == b''
-        return UuidType()
-
-
-# TODO: TIPO UUID
-uuid_type = UuidType()    
-
+   
 
 def decimal_arrow(
     precision, 
@@ -96,5 +78,5 @@ map_typs = {
     'smallmoney': pa.int32(),
     'tinyint': pa.int8(),
     'time': time_arrow,
-    'uniqueidentifier': uuid_type
+    'uniqueidentifier': pa.binary(16)
 }
