@@ -5,6 +5,7 @@ from typing import (
     Iterable, 
 )
 from .schemas import get_schema
+from .datatypes import UuidType
 
 
 def cursor_arrow(
@@ -51,6 +52,9 @@ def to_arrow_lotes(
         query
     )
     array_type = schema('st')
+    
+    # NOTE: Registrar o tipo novo
+    pa.register_extension_type(UuidType())
 
     arrays = (
         pa.array(map(tuple, lote), type=array_type)
@@ -60,7 +64,7 @@ def to_arrow_lotes(
             database, 
             schema,
             query, 
-            limit
+            limit   
         )
     )
 
