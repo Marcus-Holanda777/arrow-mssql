@@ -11,6 +11,7 @@ def cursor_arrow(
     driver: str,
     name: str,
     database: str,
+    schema: str = 'dbo',
     query: bool = False,
     limit: int = 1_000_000
 ) -> Iterable[list]:
@@ -20,7 +21,7 @@ def cursor_arrow(
             f'''
             SELECT 
             *
-            FROM {database}.dbo.{name} 
+            FROM {database}.{schema}.{name} 
             WITH(NOLOCK)
             '''
         )
@@ -37,18 +38,29 @@ def to_arrow_lotes(
     driver: str,
     name: str,
     database: str,
+    schema: str = 'dbo',
     query: bool = False,
     limit: int = 1_000_000
 ) -> pa.ipc.RecordBatchReader:
     
-    schema = get_schema(driver, name, database, query)
+    schema = get_schema(
+        driver, 
+        name, 
+        database, 
+        schema, 
+        query
+    )
     array_type = schema('st')
 
     arrays = (
         pa.array(map(tuple, lote), type=array_type)
         for lote in cursor_arrow(
-            driver, name, 
-            database, query, limit
+            driver, 
+            name, 
+            database, 
+            schema,
+            query, 
+            limit
         )
     )
 
@@ -69,7 +81,9 @@ def to_parquet(
     *,
     path: str,
     database: str,
+    schema: str = 'dbo',
     query: bool = False,
+    row_group_size: int = 1_000_000,
     limit: int = 1_000_000
 ) -> None:
     """
@@ -86,7 +100,18 @@ def to_parquet(
     
     import pyarrow.parquet as pq
     
-    with to_arrow_lotes(driver, name, database, query, limit) as lotes:
+    with to_arrow_lotes(
+        driver, 
+        name, 
+        database, 
+        schema, 
+        query, 
+        limit
+    ) as lotes:
+        
         with pq.ParquetWriter(path, lotes.schema) as writer:
             for lote in lotes:
-                writer.write_batch(lote, row_group_size=limit)
+                writer.write_batch(
+                    lote, 
+                    row_group_size=row_group_size
+                )

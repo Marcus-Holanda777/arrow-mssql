@@ -14,6 +14,7 @@ def schema_query_or_table(
     driver: str,
     name: str,
     database: str,
+    schema: str,
     query: bool
 ) -> list[tuple]:
     
@@ -41,6 +42,7 @@ def schema_query_or_table(
                 datetime_precision
             from {database}.information_schema.columns
             where table_name = '{name}'
+            and table_schema = '{schema}'
             '''
         )
 
@@ -77,6 +79,7 @@ def get_schema(
     driver: str,
     name: str,
     database: str,
+    schema: str = 'dbo',
     query: bool = False
 ) -> Callable:
 
@@ -85,6 +88,7 @@ def get_schema(
         driver,
         name,
         database,
+        schema,
         query
     )
     
