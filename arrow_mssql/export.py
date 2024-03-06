@@ -5,7 +5,6 @@ from typing import (
     Iterable, 
 )
 from .schemas import get_schema
-from .datatypes import UuidType
 
 
 def cursor_arrow(
