@@ -36,7 +36,7 @@ if __name__ == '__main__':
         query=True
     )('sh')
 
-    with raw_sql(DRIVER) as cursor:    
+    with raw_sql(DRIVER) as cursor:
         stmt = cursor.execute(query_s).fetchall()
         data = []
 
