@@ -47,7 +47,7 @@ to_parquet(
     path='destino.parquet'
 )
 
-# EXPORTANDO UMA TABELA
+# EXPORTANDO UMA CONSULTA
 to_parquet(
     DRIVER, 
     'SELECT N1, N2 FROM NOME_TABELA WHERE N1 = 0', 
