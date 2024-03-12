@@ -95,6 +95,8 @@ def to_parquet(
     path: Caminho do arquivo
     database: Banco de dados da tabela
     query: Falso para tabela
+    schema: schema da tabela
+    row_group_size: Grupo do arquivo .parquet
     limit: porcao de dados
     """
     
@@ -117,5 +119,52 @@ def to_parquet(
                 )
 
 
-def to_csv() -> None:
-    ...
+def to_csv(
+    driver: str,
+    name: str,
+    *,
+    path: str,
+    database: str,
+    schema: str = 'dbo',
+    query: bool = False,
+    delimiter: str = ';',
+    limit: int = 1_000_000
+) -> None:
+    """
+    ### Exporta tabela ou consulta para .csv
+    
+    ----
+    driver: String de conexao `pyodbc`
+    name: Tabela ou consulta
+    path: Caminho do arquivo
+    database: Banco de dados da tabela
+    query: Falso para tabela
+    schema: schema da tabela
+    delimiter: separador das colunas
+    limit: porcao de dados
+    """
+    
+    from pyarrow import csv
+    
+    with to_arrow_lotes(
+        driver, 
+        name, 
+        database, 
+        schema, 
+        query, 
+        limit
+    ) as lotes:
+        
+        write_options = csv.WriteOptions(
+            include_header=True,
+            delimiter=delimiter, 
+            quoting_style='all_valid'
+        )
+        
+        with csv.CSVWriter(
+            path, 
+            lotes.schema, 
+            write_options=write_options
+        ) as writer:
+            for lote in lotes:
+                writer.write_batch(lote)

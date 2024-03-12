@@ -1,3 +1,9 @@
-from .export import to_parquet
+from .export import (
+    to_parquet,
+    to_csv
+)
 
-__all__ = ['to_parquet']
+__all__ = [
+    'to_parquet',
+    'to_csv'
+]
