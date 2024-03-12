@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "arrow-mssql"
 version = "0.0.01"
-description = ""
+description = "Arrow-mssql exporta tabela ou consulta para .parquet ou .csv"
 authors = ["Marcus Holanda <mvsh777@hotmail.com>"]
 readme = "README.md"
 classifiers = [
