@@ -1,9 +1,18 @@
 [tool.poetry]
 name = "arrow-mssql"
-version = "0.1.0"
+version = "0.0.01"
 description = ""
 authors = ["Marcus Holanda <mvsh777@hotmail.com>"]
 readme = "README.md"
+classifiers = [
+    "Development Status :: 1 - Planning",
+    "Natural Language :: Portuguese (Brazilian)",
+    "Programming Language :: PL/SQL",
+    "Programming Language :: Python :: 3.11"
+]
+
+[tool.poetry.urls]
+"Codigo" = "https://github.com/Marcus-Holanda777/arrow-mssql"
 
 [tool.poetry.dependencies]
 python = "^3.11"
