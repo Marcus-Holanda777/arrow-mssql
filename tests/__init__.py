@@ -13,6 +13,9 @@ DRIVER = (
     'Authentication=ActiveDirectoryIntegrated;'
 )
 
+# EXPORTANDO UMA TABELA
+to_parquet(DRIVER, 'NOME_TABELA', path='destino.parquet')
+
 
 if __name__ == '__main__':
     import pyarrow as pa
