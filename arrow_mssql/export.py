@@ -115,3 +115,7 @@ def to_parquet(
                     lote, 
                     row_group_size=row_group_size
                 )
+
+
+def to_csv() -> None:
+    ...
