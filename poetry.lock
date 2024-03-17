@@ -151,4 +151,4 @@ rs = ["sqlglotrs (==0.1.2)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "584b27de98ddbfca1827b814afb50dc82d86ddaf81fae35339051bbc63f133d0"
+content-hash = "aa8429e7928fd7e1421346bf1a0c9b779e462f70b0db4020cc9d8d3614df8c85"
