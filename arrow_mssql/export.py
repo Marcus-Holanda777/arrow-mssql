@@ -5,6 +5,7 @@ from typing import (
     Iterable, 
 )
 from .schemas import get_schema
+from .utils import is_query
 
 
 def cursor_arrow(
@@ -12,7 +13,6 @@ def cursor_arrow(
     name: str,
     database: str,
     schema: str = 'dbo',
-    query: bool = False,
     limit: int = 1_000_000
 ) -> Iterable[list]:
     
@@ -26,7 +26,7 @@ def cursor_arrow(
             '''
         )
 
-        if query:
+        if is_query(name):
             stmt = dedent(name)
 
         cursor.execute(stmt)
@@ -39,7 +39,6 @@ def to_arrow_lotes(
     name: str,
     database: str,
     schema: str = 'dbo',
-    query: bool = False,
     limit: int = 1_000_000
 ) -> pa.ipc.RecordBatchReader:
     
@@ -47,8 +46,7 @@ def to_arrow_lotes(
         driver, 
         name, 
         database, 
-        schema, 
-        query
+        schema
     )
     array_type = schema_arrow('st')
     
@@ -59,7 +57,6 @@ def to_arrow_lotes(
             name, 
             database, 
             schema,
-            query, 
             limit   
         )
     )
@@ -82,7 +79,6 @@ def to_parquet(
     path: str,
     database: str,
     schema: str = 'dbo',
-    query: bool = False,
     row_group_size: int = 1_000_000,
     limit: int = 1_000_000
 ) -> None:
@@ -94,7 +90,6 @@ def to_parquet(
     name: Tabela ou consulta
     path: Caminho do arquivo
     database: Banco de dados da tabela
-    query: Falso para tabela
     schema: schema da tabela
     row_group_size: Grupo do arquivo .parquet
     limit: porcao de dados
@@ -107,7 +102,6 @@ def to_parquet(
         name, 
         database, 
         schema, 
-        query, 
         limit
     ) as lotes:
         
@@ -126,7 +120,6 @@ def to_csv(
     path: str,
     database: str,
     schema: str = 'dbo',
-    query: bool = False,
     delimiter: str = ';',
     limit: int = 1_000_000
 ) -> None:
@@ -138,7 +131,6 @@ def to_csv(
     name: Tabela ou consulta
     path: Caminho do arquivo
     database: Banco de dados da tabela
-    query: Falso para tabela
     schema: schema da tabela
     delimiter: separador das colunas
     limit: porcao de dados
@@ -151,7 +143,6 @@ def to_csv(
         name, 
         database, 
         schema, 
-        query, 
         limit
     ) as lotes:
         

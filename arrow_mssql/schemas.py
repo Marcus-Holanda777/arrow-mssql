@@ -8,42 +8,52 @@ from typing import (
 )
 from .datatypes import map_typs
 from operator import itemgetter
+import sqlglot as sg
+import sqlglot.expressions as sge
+from .utils import is_query
 
 
 def schema_query_or_table(
     driver: str,
     name: str,
     database: str,
-    schema: str,
-    query: bool
+    schema: str
 ) -> list[tuple]:
     
+    query = is_query(name)
+
     if query:
-       import re
-
-       comp = re.compile(r"'")
-       name = comp.sub(r"''", name)
-
+       name = sge.convert(str(name)).sql('tsql')
        stmt = dedent(
            f'''
-           EXEC sp_describe_first_result_set @tsql = N'{name}'
+           EXEC sp_describe_first_result_set @tsql = N{name}
            '''
        )
 
     else:
-        stmt = dedent(
-            f'''
-            select 
-                column_name,
-                data_type,
-                is_nullable,
-                numeric_precision,
-                numeric_scale,
-                datetime_precision
-            from {database}.information_schema.columns
-            where table_name = '{name}'
-            and table_schema = '{schema}'
-            '''
+        where = [
+            sg.column("table_name").eq(sge.convert(name)),
+            sg.column("table_schema").eq(sge.convert(schema))
+        ]
+
+        stmt = (
+            sg.select(
+                "column_name",
+                "data_type",
+                "is_nullable",
+                "numeric_precision",
+                "numeric_scale",
+                "datetime_precision"
+            )
+            .from_(
+                sg.table(
+                    'columns',
+                    db='information_schema',
+                    catalog=database
+                )
+            )
+            .where(*where)
+            .sql('tsql')
         )
 
     with raw_sql(driver) as cur:
@@ -79,8 +89,7 @@ def get_schema(
     driver: str,
     name: str,
     database: str,
-    schema: str = 'dbo',
-    query: bool = False
+    schema: str = 'dbo'
 ) -> Callable:
 
     
@@ -88,8 +97,7 @@ def get_schema(
         driver,
         name,
         database,
-        schema,
-        query
+        schema
     )
     
     def tipo(

@@ -38,23 +38,22 @@ Tanto uma tabela ou consulta pode ser exportada
 > a exportacao é feita de forma incrimental por lotes de dados
 
 ```python
-# EXPORTANDO UMA TABELA
-to_parquet(
+# EXPORTANDO UMA TABELA -- para csv
+to_csv(
     DRIVER, 
     'NOME_TABELA',
     schema='dbo',
     database='seu_banco', 
-    path='destino.parquet'
+    path='destino.csv'
 )
 
-# EXPORTANDO UMA CONSULTA
+# EXPORTANDO UMA CONSULTA -- para .parquet
 to_parquet(
     DRIVER, 
     'SELECT N1, N2 FROM NOME_TABELA WHERE N1 = 0', 
     schema='dbo',
     database='seu_banco', 
     path='destino.parquet'
-    query=True
 )
 
 ```
