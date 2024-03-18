@@ -3,7 +3,7 @@ from .export import (
     to_csv
 )
 
-__version__ = '0.0.05'
+__version__ = '0.0.06'
 
 __all__ = [
     'to_parquet',

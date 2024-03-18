@@ -10,7 +10,10 @@ from .datatypes import map_typs
 from operator import itemgetter
 import sqlglot as sg
 import sqlglot.expressions as sge
-from .utils import is_query
+from .utils import (
+    is_query,
+    rename_col
+)
 
 
 def schema_query_or_table(
@@ -53,6 +56,7 @@ def schema_query_or_table(
                 )
             )
             .where(*where)
+            .order_by("ordinal_position")
             .sql('tsql')
         )
 
@@ -135,7 +139,7 @@ def get_schema(
                 dtype = dtype(dt_precision)
 
             field = pa.field(
-                cols, 
+                rename_col(cols), 
                 dtype, 
                 nullable= is_null == 'YES'
             )

@@ -6,6 +6,7 @@ from typing import (
 )
 from .schemas import get_schema
 from .utils import is_query
+import sqlglot as sg
 
 
 def cursor_arrow(
@@ -17,13 +18,17 @@ def cursor_arrow(
 ) -> Iterable[list]:
     
     with raw_sql(driver) as cursor:
-        stmt = dedent(
-            f'''
-            SELECT 
-            *
-            FROM {database}.{schema}.{name} 
-            WITH(NOLOCK)
-            '''
+        stmt = (
+            sg.select('*')
+            .from_(
+                sg.table(
+                    f'{name} WITH(NOLOCK)',
+                    db=schema,
+                    catalog=database,
+                    quoted=''
+                )
+            )
+            .sql('tsql')
         )
 
         if is_query(name):
