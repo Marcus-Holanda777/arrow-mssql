@@ -22,10 +22,9 @@ def cursor_arrow(
             sg.select('*')
             .from_(
                 sg.table(
-                    f'{name} WITH(NOLOCK)',
+                    f'{name}',
                     db=schema,
-                    catalog=database,
-                    quoted=''
+                    catalog=database
                 )
             )
             .sql('tsql')

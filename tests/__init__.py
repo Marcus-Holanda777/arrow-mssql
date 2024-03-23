@@ -12,15 +12,15 @@ DRIVER = (
 if __name__ == '__main__':
     to_parquet(
         DRIVER,
-        'DEPOSITO',
-        database='cosmos_v14b',
+        'RECUPERAVEL_COLETA_DET',
+        database='cosmospdp',
         schema='dbo',
-        path='teste.parquet'
+        path='recuperavel.parquet'
     )
 
     to_csv(
         DRIVER,
-        'DEPOSITO',
+        'select top 1000 * from kardex_filial kf',
         database='cosmos_v14b',
         schema='dbo',
         path='teste.csv'
