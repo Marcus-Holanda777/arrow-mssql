@@ -1,5 +1,5 @@
 import pyarrow as pa
-from .connector import raw_sql
+from ..connector import raw_sql
 from textwrap import dedent
 from typing import (
     Any, 
@@ -10,7 +10,7 @@ from .datatypes import map_typs
 from operator import itemgetter
 import sqlglot as sg
 import sqlglot.expressions as sge
-from .utils import (
+from ..utils import (
     is_query,
     rename_col
 )

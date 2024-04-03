@@ -4,7 +4,7 @@ from textwrap import dedent
 from typing import (
     Iterable, 
 )
-from .schemas import get_schema
+from .output.schemas import get_schema
 from .utils import is_query
 import sqlglot as sg
 

@@ -33,7 +33,7 @@ def datetimeoffset_to_datetime(value):
 
 def do_connect(
     *args,
-    **kwargs: Any,
+    **kwargs: Any
 ) -> None:
     
     con = odbc.connect(
@@ -46,12 +46,12 @@ def do_connect(
         datetimeoffset_to_datetime
     )
     
-    # with(nolock) ativado
-    con.execute(
-        'set transaction '
-        'isolation level '
-        'read uncommitted;'
-    )
+    if 'autocommit' not in kwargs:
+        con.execute(
+            'set transaction '
+            'isolation level '
+            'read uncommitted;'
+        )
 
     with closing(con.cursor()) as cur:
         cur.execute("SET DATEFIRST 1")
