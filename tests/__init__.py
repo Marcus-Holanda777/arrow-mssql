@@ -1,5 +1,4 @@
 from arrow_mssql.iport import write_parquet
-import pandas as pd
 
 
 DRIVER = (
@@ -20,6 +19,13 @@ if __name__ == '__main__':
     )
     
     with write_parquet(DRIVER, '##teste', path=raiz) as cur:
-        df = pd.read_sql_table('##teste', con=cur)
-        print(df)
+        cur.execute('''
+            SELECT top 1000 *
+            FROM ##teste WITH(NOLOCK)
+        ''')
+    
+        cols = [c[0] for c in cur.description]
+        rows = [dict(zip(cols, row)) for row in cur.fetchall()]
+
+        print(rows)
            

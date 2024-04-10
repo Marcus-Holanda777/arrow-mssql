@@ -6,6 +6,7 @@ from arrow_mssql.input.datatypes import (
 )
 import pyarrow as pa
 import textwrap
+from arrow_mssql.utils import rename_col
 
 
 def drop_table(tbl: str) -> str:
@@ -20,7 +21,7 @@ def create_table(
     list_types = []
 
     for field in schema_arrow:
-        col = field.name
+        col = rename_col(field.name)
         tp = field.type
         null_type = '' if field.nullable == True else 'not null'
 
