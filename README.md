@@ -7,6 +7,8 @@ e faz a exportação para um arquivo *.parquet* ou *.csv*,
 utilizando a solução [arrow](https://arrow.apache.org/docs/index.html) que é uma tecnologia com
 foco em análise e desempenho na memória.
 
+Agora é possível importar um arquivo *.parquet* para uma tabela do sql server.
+
 ## Instalação
 
 ```bash
@@ -56,4 +58,13 @@ to_parquet(
     path='destino.parquet'
 )
 
+# IMPORTAR .parquet para tabela temporaria do ssms
+# o retornor é um cursor referente a conexao com o banco de dados
+with write_parquet(
+    DRIVER, 
+    '##teste', 
+    path='origem.parquet'
+) as C:
+
+    ...
 ```
