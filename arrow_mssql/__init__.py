@@ -5,7 +5,7 @@ from .export import (
 from .iport import write_parquet
 
 
-__version__ = '0.0.08'
+__version__ = '0.0.81'
 
 __all__ = [
     'to_parquet',
