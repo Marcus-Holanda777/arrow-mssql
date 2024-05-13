@@ -1,4 +1,5 @@
 # Arrow-mssql
+[![PyPI](https://img.shields.io/pypi/v/arrow-mssql.svg)](https://pypi.org/project/arrow-mssql/)
 
 ## O que é o Arrow-mssql ?
 
