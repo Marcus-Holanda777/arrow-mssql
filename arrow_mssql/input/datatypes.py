@@ -134,7 +134,7 @@ map_typs_pyodbc = {
     pa.float64(): pyodbc.SQL_FLOAT,
     pa.date32(): pyodbc.SQL_TYPE_DATE,
     pa.date64(): pyodbc.SQL_TYPE_DATE,
-    pa.string(): (pyodbc.SQL_VARCHAR, 8_000, 0),
-    pa.utf8(): (pyodbc.SQL_VARCHAR, 8_000, 0),
+    pa.string(): (pyodbc.SQL_VARCHAR, 0, 0),
+    pa.utf8(): (pyodbc.SQL_VARCHAR, 0, 0),
     pa.binary(): pyodbc.SQL_BINARY,
 }

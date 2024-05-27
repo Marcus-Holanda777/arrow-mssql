@@ -46,12 +46,11 @@ def do_connect(
         datetimeoffset_to_datetime
     )
     
-    if 'autocommit' not in kwargs:
-        con.execute(
-            'set transaction '
-            'isolation level '
-            'read uncommitted;'
-        )
+    con.execute(
+        'set transaction '
+        'isolation level '
+        'read uncommitted;'
+    )
 
     with closing(con.cursor()) as cur:
         cur.execute("SET DATEFIRST 1")
@@ -65,9 +64,14 @@ def raw_sql(*args,**kwargs):
     con = do_connect(*args, **kwargs)
     cursor = con.cursor()
 
+    # NOTE: Adicionado o commit na conexao !
     try:
         yield cursor
-    except Exception:
+    except Exception:  
+        con.rollback()
         raise
+    else:
+        con.commit()
     finally:
         cursor.close()
+        con.close()
