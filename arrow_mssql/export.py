@@ -14,7 +14,7 @@ def cursor_arrow(
     name: str,
     database: str,
     schema: str = 'dbo',
-    limit: int = 1_000_000
+    chunk_size: int = 1_000_000
 ) -> Iterable[list]:
     
     with raw_sql(driver) as cursor:
@@ -34,7 +34,7 @@ def cursor_arrow(
             stmt = dedent(name)
 
         cursor.execute(stmt)
-        while batch := cursor.fetchmany(limit):
+        while batch := cursor.fetchmany(chunk_size):
             yield batch
 
 
@@ -43,7 +43,7 @@ def to_arrow_lotes(
     name: str,
     database: str,
     schema: str = 'dbo',
-    limit: int = 1_000_000
+    chunk_size: int = 1_000_000
 ) -> pa.ipc.RecordBatchReader:
     
     schema_arrow = get_schema(
@@ -61,7 +61,7 @@ def to_arrow_lotes(
             name, 
             database, 
             schema,
-            limit   
+            chunk_size   
         )
     )
 
@@ -84,7 +84,7 @@ def to_parquet(
     database: str,
     schema: str = 'dbo',
     row_group_size: int = 1_000_000,
-    limit: int = 1_000_000
+    chunk_size: int = 1_000_000
 ) -> None:
     """
     ### Exporta tabela ou consulta para .parquet
@@ -106,7 +106,7 @@ def to_parquet(
         name, 
         database, 
         schema, 
-        limit
+        chunk_size
     ) as lotes:
         
         with pq.ParquetWriter(path, lotes.schema) as writer:
@@ -125,7 +125,7 @@ def to_csv(
     database: str,
     schema: str = 'dbo',
     delimiter: str = ';',
-    limit: int = 1_000_000
+    chunk_size: int = 1_000_000
 ) -> None:
     """
     ### Exporta tabela ou consulta para .csv
@@ -147,7 +147,7 @@ def to_csv(
         name, 
         database, 
         schema, 
-        limit
+        chunk_size
     ) as lotes:
         
         write_options = csv.WriteOptions(

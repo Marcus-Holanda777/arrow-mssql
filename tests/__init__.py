@@ -28,17 +28,29 @@ if __name__ == '__main__':
     )
     
     n1 = perf_counter()
+
+    to_parquet(
+        DRIVER,
+        "produto_mestre",
+        path='teste.parquet',
+        database='cosmos_v14b'
+    )
+
+    diff = perf_counter() - n1
+    print(f'{diff:.4f}')
     
+    n1 = perf_counter()
     with write_parquet(
-        DRIVER_DEGUG, 
-        'recuperavel',
-        path=r'C:\Users\26834\teste_sqlserver_arrow_mssql\recuperavel.parquet',
-        override=True
+        DRIVER_DEGUG,
+        'produto_mestre',
+        path='teste.parquet',
+        override=True,
+        limit=5000
     ) as cur:
         
         diff = perf_counter() - n1
         print(f'{diff:.4f}')
         
-        cur.execute('SELECT COUNT(*) FROM recuperavel WITH(NOLOCK)')
+        cur.execute('SELECT COUNT(*) FROM produto_mestre WITH(NOLOCK)')
         [(schema,)] = cur.fetchall()
         print(schema)

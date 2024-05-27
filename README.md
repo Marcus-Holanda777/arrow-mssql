@@ -68,4 +68,16 @@ with write_parquet(
 ) as C:
 
     ...
+
+# AGORA é possivel importar um numero limite de linhas
+# e selecionar as colunas no arquivo parquet
+with write_parquet(
+    DRIVER, 
+    '##teste', 
+    path='origem.parquet',
+    limit=100,
+    columns=['col1', 'col2']
+) as C:
+
+    ...
 ```

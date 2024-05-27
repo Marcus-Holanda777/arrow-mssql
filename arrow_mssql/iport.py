@@ -1,4 +1,5 @@
 import pyarrow.parquet as pq
+import pyarrow as pa
 from arrow_mssql.connector import raw_sql
 import contextlib
 from pathlib import Path
@@ -16,6 +17,8 @@ def write_parquet(
     *,
     path: str | Path,
     override: bool = True,
+    schema: str = 'dbo',
+    columns: list | None = None,
     limit: int = None,
     chunk_size: int = 100_000
 ) -> Generator[Any, Any, None]:
@@ -25,11 +28,20 @@ def write_parquet(
             path = Path(path)
 
         tbl = pq.ParquetFile(path)
+        tbl_schema = tbl.schema_arrow
 
-        droptable = db.drop_table(name)
-        create = db.create_table(name, tbl.schema_arrow)
-        insert = db.insert_table(name, tbl.schema_arrow)
-        insert_puts = db.insert_setinputsizes(tbl.schema_arrow)
+        if columns:
+            tbl_schema = pa.schema([
+                col
+                for col in tbl.schema_arrow
+                if col.name in columns
+            ])
+        
+        tbl_name = f'{schema}.{name}'
+        droptable = db.drop_table(tbl_name)
+        create = db.create_table(tbl_name, tbl_schema)
+        insert = db.insert_table(tbl_name, tbl_schema)
+        insert_puts = db.insert_setinputsizes(tbl_schema)
 
     # NOTE: autocommit pyodbc default FALSE
     with raw_sql(driver) as cursor:
@@ -49,7 +61,7 @@ def write_parquet(
                 else chunk_size
             )
 
-        for rows in tbl.iter_batches(chunk_size):
+        for rows in tbl.iter_batches(chunk_size, columns=columns):
 
             lotes = [tuple(d.values()) for d in rows.to_pylist()]
             
