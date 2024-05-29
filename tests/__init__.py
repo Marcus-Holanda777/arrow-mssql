@@ -1,5 +1,5 @@
 from arrow_mssql.export import to_parquet
-from arrow_mssql.iport import write_parquet
+from arrow_mssql.iport import write_parquet, write_csv
 
 DRIVER = (
     'Driver={ODBC Driver 18 for Sql Server};'
@@ -27,25 +27,15 @@ if __name__ == '__main__':
         r'\prodcd.parquet'
     )
     
-    n1 = perf_counter()
-
-    to_parquet(
-        DRIVER,
-        "produto_mestre",
-        path='teste.parquet',
-        database='cosmos_v14b'
-    )
-
-    diff = perf_counter() - n1
-    print(f'{diff:.4f}')
     
     n1 = perf_counter()
-    with write_parquet(
+    with write_csv(
         DRIVER_DEGUG,
         'produto_mestre',
-        path='teste.parquet',
+        path=r'C:\Users\26834\Downloads\yellow_tripdata_2015-01\yellow_tripdata_2015-01.csv',
         override=True,
-        limit=5000
+        delimiter=',',
+        limit=200
     ) as cur:
         
         diff = perf_counter() - n1
@@ -53,4 +43,4 @@ if __name__ == '__main__':
         
         cur.execute('SELECT COUNT(*) FROM produto_mestre WITH(NOLOCK)')
         [(schema,)] = cur.fetchall()
-        print(schema)
+        print(schema)   
