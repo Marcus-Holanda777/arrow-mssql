@@ -120,7 +120,7 @@ map_typs = {
     pa.date64(): 'date',
     pa.string(): 'varchar(max)',
     pa.utf8(): 'varchar(max)',
-    pa.binary(): 'binary',
+    pa.binary(): 'varbinary(max)',
 }
 
 map_typs_pyodbc = {
@@ -136,5 +136,5 @@ map_typs_pyodbc = {
     pa.date64(): pyodbc.SQL_TYPE_DATE,
     pa.string(): (pyodbc.SQL_VARCHAR, 0, 0),
     pa.utf8(): (pyodbc.SQL_VARCHAR, 0, 0),
-    pa.binary(): pyodbc.SQL_BINARY,
+    pa.binary(): (pyodbc.SQL_VARBINARY, 0, 0),
 }
