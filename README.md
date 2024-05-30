@@ -3,12 +3,12 @@
 
 ## O que é o Arrow-mssql ?
 
-é um projeto que recebe uma tabela ou consulta do `SQL SERVER`
+É um projeto que recebe uma tabela ou consulta do `SQL SERVER`
 e faz a exportação para um arquivo *.parquet* ou *.csv*,
 utilizando a solução [arrow](https://arrow.apache.org/docs/index.html) que é uma tecnologia com
 foco em análise e desempenho na memória.
 
-Agora é possível importar um arquivo *.parquet* para uma tabela do sql server.
+Também é possível importar um arquivo *.parquet* para uma tabela do sql server ou arquivo *.csv*.
 
 ## Instalação
 
@@ -58,7 +58,12 @@ to_parquet(
     database='seu_banco', 
     path='destino.parquet'
 )
+```
 
+É possivel importar arquivos csv ou parquet, definir um limite de linhas
+e colunas no processo.
+
+```python
 # IMPORTAR .parquet para tabela temporaria do ssms
 # o retornor é um cursor referente a conexao com o banco de dados
 with write_parquet(
