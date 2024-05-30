@@ -24,21 +24,10 @@ DRIVER_DEGUG = (
 # EXPORTANDO UMA TABELA
 if __name__ == '__main__':
     
-    for file in glob.iglob('C://python_dia_dia/ressarcimento_hoje/*.parquet'):
-        name, exten = os.path.basename(file).split('.')
-        print(f'Tabela: {name}')
-
-        n1 = perf_counter()
-        with write_parquet(
-            DRIVER_DEGUG,
-            name,
-            path=file,
-            override=True
-        ) as cur:
-                
-            diff = perf_counter() - n1
-            print(f'{diff:.4f}')
-            
-            cur.execute(f'SELECT COUNT(*) FROM {name} WITH(NOLOCK)')
-            [(schema,)] = cur.fetchall()
-            print(schema)
+    to_parquet(
+        DRIVER,
+        'SELECT TOP 300000 * FROM COSMOSPDP.DBO.RECUPERAVEL_COLETA_DET',   
+        path='teste.parquet',
+        database='COSMOSPDP',
+        schema='dbo'    
+    )       

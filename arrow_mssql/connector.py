@@ -46,11 +46,12 @@ def do_connect(
         datetimeoffset_to_datetime
     )
     
-    con.execute(
-        'set transaction '
-        'isolation level '
-        'read uncommitted;'
+    con.autocommit = True
+    con.set_attr(
+        odbc.SQL_ATTR_TXN_ISOLATION,
+        odbc.SQL_TXN_READ_UNCOMMITTED
     )
+    con.autocommit = False # habilita transacoes
 
     with closing(con.cursor()) as cur:
         cur.execute("SET DATEFIRST 1")
