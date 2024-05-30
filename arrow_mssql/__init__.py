@@ -7,7 +7,7 @@ from .iport import (
     write_csv
 )
 
-__version__ = '0.0.84'
+__version__ = '0.0.85'
 
 __all__ = [
     'to_parquet',
