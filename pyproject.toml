@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "arrow-mssql"
-version = "0.0.85"
+version = "0.0.86"
 description = "Arrow-mssql exporta tabela ou consulta para .parquet ou .csv, e também faz a leitura de .parquet ou .csv para tabela do sql server"
 authors = ["Marcus Holanda <mvsh777@hotmail.com>"]
 readme = "README.md"
@@ -18,7 +18,7 @@ classifiers = [
 python = "^3.11"
 pyodbc = "^5.1.0"
 pyarrow = ">=15, <20"
-sqlglot = ">=20, <24"
+sqlglot = ">=20, <28"
 
 
 [build-system]
