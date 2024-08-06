@@ -3,6 +3,8 @@ from arrow_mssql.iport import write_parquet, write_csv
 from time import perf_counter
 import glob
 import os
+import pyarrow as pa
+
 
 DRIVER = (
     'Driver={ODBC Driver 18 for Sql Server};'
@@ -23,11 +25,13 @@ DRIVER_DEGUG = (
 
 # EXPORTANDO UMA TABELA
 if __name__ == '__main__':
-    
-    to_parquet(
-        DRIVER,
-        'SELECT TOP 300000 * FROM COSMOSPDP.DBO.RECUPERAVEL_COLETA_DET',   
-        path='teste.parquet',
-        database='COSMOSPDP',
-        schema='dbo'    
-    )       
+
+    with write_csv(
+        DRIVER_DEGUG, 
+        '##ANALISE_BASE',
+        path='c:/arquivos/data.csv',
+        column_types={'Chave_NF': pa.string()}
+    ) as c:
+        
+        c.execute("SELECT * FROM ##ANALISE_BASE")
+        print(c.fetchone())

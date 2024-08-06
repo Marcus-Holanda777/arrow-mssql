@@ -101,6 +101,7 @@ def write_csv(
     override: bool = True,
     schema: str = 'dbo',
     columns: list | None = None,
+    column_types: dict | None = None,
     limit: int = None,
     delimiter: str = ';',
     block_size: int = 1 << 20
@@ -108,20 +109,40 @@ def write_csv(
     """
     MEGA BYTES = 1 << 20
     """
+
+    timestamp_parsers = [csv.ISO8601] + [
+        "%Y-%m-%d",
+        "%Y-%m-%d %H:%M:%S",
+        "%Y-%m-%d %H:%M:%S %Z",
+        "%Y-%m-%d %H:%M:%S %z",
+        "%Y-%m-%d %H:%M:%S.%f",
+        "%Y-%m-%d %H:%M:%S.%f %Z",
+        "%Y-%m-%d %H:%M:%S.%f %z",
+        "%Y-%m-%dT%H:%M:%S",
+        "%Y-%m-%dT%H:%M:%S %Z",
+        "%Y-%m-%dT%H:%M:%S %z",
+        "%Y-%m-%dT%H:%M:%S.%f",
+        "%Y-%m-%dT%H:%M:%S.%f %Z",
+        "%Y-%m-%dT%H:%M:%S.%f %z",
+        "%d/%m/%Y",
+        "%d/%m/%Y %H:%M",
+        "%d/%m/%Y %H:%M:%S"
+    ]
     
     read_options = csv.ReadOptions(
-        block_size=block_size
+        block_size=block_size,
+        use_threads=True
     )
 
     parse_options = csv.ParseOptions(
         delimiter=delimiter
     )
     
-    convert_options = None
-    if columns:
-        convert_options = csv.ConvertOptions(
-            include_columns=columns
-        )
+    convert_options = csv.ConvertOptions(
+        include_columns=columns,
+        timestamp_parsers=timestamp_parsers,
+        column_types=column_types,
+    )
     
     with contextlib.suppress(AttributeError):
         if isinstance(path, str):
