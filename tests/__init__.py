@@ -26,12 +26,11 @@ DRIVER_DEGUG = (
 # EXPORTANDO UMA TABELA
 if __name__ == '__main__':
 
-    with write_csv(
-        DRIVER_DEGUG, 
-        '##ANALISE_BASE',
-        path='c:/arquivos/data.csv',
-        column_types={'Chave_NF': pa.string()}
-    ) as c:
-        
-        c.execute("SELECT * FROM ##ANALISE_BASE")
-        print(c.fetchone())
+    to_parquet(DRIVER, 
+        """select dscXml from dbnfe.dbo.tbNfeXml with(nolock)
+           where dthGravacao BETWEEN '2024-08-01 00:00:00.000' and '2024-08-01 23:59:59.999'
+        """, 
+        database='cosmos_v14b', 
+        path='vendas.parquet',
+        chunk_size=1_000
+    )

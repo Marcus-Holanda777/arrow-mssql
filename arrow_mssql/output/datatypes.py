@@ -103,5 +103,6 @@ map_typs = {
     'smallmoney': pa.int32(),
     'tinyint': pa.int8(),
     'time': time_arrow,
-    'uniqueidentifier': pa.string()
+    'uniqueidentifier': pa.string(),
+    'xml': pa.string()
 }
