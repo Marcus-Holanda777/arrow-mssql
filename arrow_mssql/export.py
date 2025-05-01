@@ -2,7 +2,7 @@ import pyarrow as pa
 from .connector import raw_sql
 from textwrap import dedent
 from typing import (
-    Iterable, 
+    Iterable,
 )
 from .output.schemas import get_schema
 from .utils import is_query
@@ -13,21 +13,14 @@ def cursor_arrow(
     driver: str,
     name: str,
     database: str,
-    schema: str = 'dbo',
-    chunk_size: int = 1_000_000
+    schema: str = "dbo",
+    chunk_size: int = 1_000_000,
 ) -> Iterable[list]:
-    
     with raw_sql(driver) as cursor:
         stmt = (
-            sg.select('*')
-            .from_(
-                sg.table(
-                    f'{name}',
-                    db=schema,
-                    catalog=database
-                )
-            )
-            .sql('tsql')
+            sg.select("*")
+            .from_(sg.table(f"{name}", db=schema, catalog=database))
+            .sql("tsql")
         )
 
         if is_query(name):
@@ -42,38 +35,20 @@ def to_arrow_lotes(
     driver: str,
     name: str,
     database: str,
-    schema: str = 'dbo',
-    chunk_size: int = 1_000_000
+    schema: str = "dbo",
+    chunk_size: int = 1_000_000,
 ) -> pa.ipc.RecordBatchReader:
-    
-    schema_arrow = get_schema(
-        driver, 
-        name, 
-        database, 
-        schema
-    )
-    array_type = schema_arrow('st')
-    
+    schema_arrow = get_schema(driver, name, database, schema)
+    array_type = schema_arrow("st")
+
     arrays = (
         pa.array(map(tuple, lote), type=array_type)
-        for lote in cursor_arrow(
-            driver, 
-            name, 
-            database, 
-            schema,
-            chunk_size   
-        )
+        for lote in cursor_arrow(driver, name, database, schema, chunk_size)
     )
 
-    lotes = map(
-        pa.RecordBatch.from_struct_array, 
-        arrays
-    )
+    lotes = map(pa.RecordBatch.from_struct_array, arrays)
 
-    return pa.ipc.RecordBatchReader.from_batches(
-        schema_arrow('sh'), 
-        lotes
-    )
+    return pa.ipc.RecordBatchReader.from_batches(schema_arrow("sh"), lotes)
 
 
 def to_parquet(
@@ -82,13 +57,13 @@ def to_parquet(
     *,
     path: str,
     database: str,
-    schema: str = 'dbo',
+    schema: str = "dbo",
     row_group_size: int = 1_000_000,
-    chunk_size: int = 1_000_000
+    chunk_size: int = 1_000_000,
 ) -> None:
     """
     ### Exporta tabela ou consulta para .parquet
-    
+
     ----
     driver: String de conexao `pyodbc`
     name: Tabela ou consulta
@@ -98,23 +73,13 @@ def to_parquet(
     row_group_size: Grupo do arquivo .parquet
     limit: porcao de dados
     """
-    
+
     import pyarrow.parquet as pq
-    
-    with to_arrow_lotes(
-        driver, 
-        name, 
-        database, 
-        schema, 
-        chunk_size
-    ) as lotes:
-        
+
+    with to_arrow_lotes(driver, name, database, schema, chunk_size) as lotes:
         with pq.ParquetWriter(path, lotes.schema) as writer:
             for lote in lotes:
-                writer.write_batch(
-                    lote, 
-                    row_group_size=row_group_size
-                )
+                writer.write_batch(lote, row_group_size=row_group_size)
 
 
 def to_csv(
@@ -123,13 +88,13 @@ def to_csv(
     *,
     path: str,
     database: str,
-    schema: str = 'dbo',
-    delimiter: str = ';',
-    chunk_size: int = 1_000_000
+    schema: str = "dbo",
+    delimiter: str = ";",
+    chunk_size: int = 1_000_000,
 ) -> None:
     """
     ### Exporta tabela ou consulta para .csv
-    
+
     ----
     driver: String de conexao `pyodbc`
     name: Tabela ou consulta
@@ -139,27 +104,14 @@ def to_csv(
     delimiter: separador das colunas
     limit: porcao de dados
     """
-    
+
     from pyarrow import csv
-    
-    with to_arrow_lotes(
-        driver, 
-        name, 
-        database, 
-        schema, 
-        chunk_size
-    ) as lotes:
-        
+
+    with to_arrow_lotes(driver, name, database, schema, chunk_size) as lotes:
         write_options = csv.WriteOptions(
-            include_header=True,
-            delimiter=delimiter, 
-            quoting_style='all_valid'
+            include_header=True, delimiter=delimiter, quoting_style="all_valid"
         )
-        
-        with csv.CSVWriter(
-            path, 
-            lotes.schema, 
-            write_options=write_options
-        ) as writer:
+
+        with csv.CSVWriter(path, lotes.schema, write_options=write_options) as writer:
             for lote in lotes:
                 writer.write_batch(lote)

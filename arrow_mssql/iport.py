@@ -5,18 +5,12 @@ from arrow_mssql.connector import raw_sql
 import contextlib
 from pathlib import Path
 import arrow_mssql.input.schema as db
-from typing import (
-    Generator,
-    Any,
-    Callable
-)
+from typing import Generator, Any, Callable
 
-def limite_rows(
-    inserts: int = 0, 
-    limit: int = None
-) -> Callable:
-    
+
+def limite_rows(inserts: int = 0, limit: int = None) -> Callable:
     inserts = 0
+
     def inner(rows) -> Generator[tuple, Any, None]:
         nonlocal inserts
         for row in rows.to_pylist():
@@ -24,7 +18,7 @@ def limite_rows(
                 if inserts < limit:
                     inserts += 1
                     yield tuple(row.values())
-            else:      
+            else:
                 yield tuple(row.values())
 
     return inner
@@ -37,12 +31,11 @@ def write_parquet(
     *,
     path: str | Path,
     override: bool = True,
-    schema: str = 'dbo',
+    schema: str = "dbo",
     columns: list | None = None,
     limit: int = None,
-    chunk_size: int = 100_000
+    chunk_size: int = 100_000,
 ) -> Generator[Any, Any, None]:
-    
     with contextlib.suppress(AttributeError):
         if isinstance(path, str):
             path = Path(path)
@@ -51,13 +44,11 @@ def write_parquet(
         tbl_schema = tbl.schema_arrow
 
         if columns:
-            tbl_schema = pa.schema([
-                col
-                for col in tbl.schema_arrow
-                if col.name in columns
-            ])
-        
-        tbl_name = f'{schema}.{name}'
+            tbl_schema = pa.schema(
+                [col for col in tbl.schema_arrow if col.name in columns]
+            )
+
+        tbl_name = f"{schema}.{name}"
         droptable = db.drop_table(tbl_name)
         create = db.create_table(tbl_name, tbl_schema)
         insert = db.insert_table(tbl_name, tbl_schema)
@@ -65,20 +56,15 @@ def write_parquet(
 
     # NOTE: autocommit pyodbc default FALSE
     with raw_sql(driver) as cursor:
-
         if override:
             cursor.execute(droptable)
             cursor.execute(create)
 
         cursor.fast_executemany = True
         cursor.setinputsizes(insert_puts)
-        
+
         if limit:
-            chunk_size = (
-                limit 
-                if limit < chunk_size
-                else chunk_size
-            )
+            chunk_size = limit if limit < chunk_size else chunk_size
 
         lotes_limit = limite_rows(limit=limit)
 
@@ -99,12 +85,12 @@ def write_csv(
     *,
     path: str | Path,
     override: bool = True,
-    schema: str = 'dbo',
+    schema: str = "dbo",
     columns: list | None = None,
     column_types: dict | None = None,
     limit: int = None,
-    delimiter: str = ';',
-    block_size: int = 1 << 20
+    delimiter: str = ";",
+    block_size: int = 1 << 20,
 ) -> Generator[Any, Any, None]:
     """
     MEGA BYTES = 1 << 20
@@ -126,24 +112,19 @@ def write_csv(
         "%Y-%m-%dT%H:%M:%S.%f %z",
         "%d/%m/%Y",
         "%d/%m/%Y %H:%M",
-        "%d/%m/%Y %H:%M:%S"
+        "%d/%m/%Y %H:%M:%S",
     ]
-    
-    read_options = csv.ReadOptions(
-        block_size=block_size,
-        use_threads=True
-    )
 
-    parse_options = csv.ParseOptions(
-        delimiter=delimiter
-    )
-    
+    read_options = csv.ReadOptions(block_size=block_size, use_threads=True)
+
+    parse_options = csv.ParseOptions(delimiter=delimiter)
+
     convert_options = csv.ConvertOptions(
         include_columns=columns,
         timestamp_parsers=timestamp_parsers,
         column_types=column_types,
     )
-    
+
     with contextlib.suppress(AttributeError):
         if isinstance(path, str):
             path = Path(path)
@@ -152,11 +133,11 @@ def write_csv(
             path,
             read_options=read_options,
             parse_options=parse_options,
-            convert_options=convert_options
+            convert_options=convert_options,
         )
         tbl_schema = tbl.schema
-        
-        tbl_name = f'{schema}.{name}'
+
+        tbl_name = f"{schema}.{name}"
         droptable = db.drop_table(tbl_name)
         create = db.create_table(tbl_name, tbl_schema)
         insert = db.insert_table(tbl_name, tbl_schema)
@@ -164,14 +145,13 @@ def write_csv(
 
     # NOTE: autocommit pyodbc default FALSE
     with raw_sql(driver) as cursor:
-
         if override:
             cursor.execute(droptable)
             cursor.execute(create)
 
         cursor.fast_executemany = True
         cursor.setinputsizes(insert_puts)
-        
+
         lotes_limit = limite_rows(limit=limit)
 
         for rows in tbl:
@@ -180,5 +160,5 @@ def write_csv(
                 break
 
             cursor.executemany(insert, lotes)
-       
+
         yield cursor
