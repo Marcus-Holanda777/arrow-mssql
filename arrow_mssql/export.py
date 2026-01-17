@@ -7,47 +7,50 @@ from typing import (
 from .output.schemas import get_schema
 from .utils import is_query
 import sqlglot as sg
+from pyodbc import Cursor
 
 
 def cursor_arrow(
-    driver: str,
+    cursor: Cursor,
     name: str,
     database: str,
     schema: str = "dbo",
     chunk_size: int = 1_000_000,
 ) -> Iterable[list]:
-    with raw_sql(driver) as cursor:
-        stmt = (
-            sg.select("*")
-            .from_(sg.table(f"{name}", db=schema, catalog=database))
-            .sql("tsql")
-        )
+    stmt = (
+        sg.select("*")
+        .from_(sg.table(f"{name}", db=schema, catalog=database))
+        .sql("tsql")
+    )
 
-        if is_query(name):
-            stmt = dedent(name)
+    if is_query(name):
+        stmt = dedent(name)
 
-        cursor.execute(stmt)
-        while batch := cursor.fetchmany(chunk_size):
-            yield batch
+    cursor.execute(stmt)
+    while batch := cursor.fetchmany(chunk_size):
+        yield batch
 
 
 def to_arrow_lotes(
-    driver: str,
+    cursor: Cursor,
     name: str,
+    pre_hooks: list[str],
     database: str,
     schema: str = "dbo",
     chunk_size: int = 1_000_000,
 ) -> pa.ipc.RecordBatchReader:
-    schema_arrow = get_schema(driver, name, database, schema)
+    for hook in pre_hooks:
+        cursor.execute(dedent(hook))
+
+    schema_arrow = get_schema(cursor, name, database, schema)
     array_type = schema_arrow("st")
 
     arrays = (
         pa.array(map(tuple, lote), type=array_type)
-        for lote in cursor_arrow(driver, name, database, schema, chunk_size)
+        for lote in cursor_arrow(cursor, name, database, schema, chunk_size)
     )
 
     lotes = map(pa.RecordBatch.from_struct_array, arrays)
-
     return pa.ipc.RecordBatchReader.from_batches(schema_arrow("sh"), lotes)
 
 
@@ -55,6 +58,7 @@ def to_parquet(
     driver: str,
     name: str,
     *,
+    pre_hooks: list[str] = [],
     path: str,
     database: str,
     schema: str = "dbo",
@@ -76,16 +80,20 @@ def to_parquet(
 
     import pyarrow.parquet as pq
 
-    with to_arrow_lotes(driver, name, database, schema, chunk_size) as lotes:
-        with pq.ParquetWriter(path, lotes.schema) as writer:
-            for lote in lotes:
-                writer.write_batch(lote, row_group_size=row_group_size)
+    with raw_sql(driver) as cursor:
+        with to_arrow_lotes(
+            cursor, name, pre_hooks, database, schema, chunk_size
+        ) as lotes:
+            with pq.ParquetWriter(path, lotes.schema) as writer:
+                for lote in lotes:
+                    writer.write_batch(lote, row_group_size=row_group_size)
 
 
 def to_csv(
     driver: str,
     name: str,
     *,
+    pre_hooks: list[str] = [],
     path: str,
     database: str,
     schema: str = "dbo",
@@ -107,11 +115,16 @@ def to_csv(
 
     from pyarrow import csv
 
-    with to_arrow_lotes(driver, name, database, schema, chunk_size) as lotes:
-        write_options = csv.WriteOptions(
-            include_header=True, delimiter=delimiter, quoting_style="all_valid"
-        )
+    with raw_sql(driver) as cursor:
+        with to_arrow_lotes(
+            cursor, name, pre_hooks, database, schema, chunk_size
+        ) as lotes:
+            write_options = csv.WriteOptions(
+                include_header=True, delimiter=delimiter, quoting_style="all_valid"
+            )
 
-        with csv.CSVWriter(path, lotes.schema, write_options=write_options) as writer:
-            for lote in lotes:
-                writer.write_batch(lote)
+            with csv.CSVWriter(
+                path, lotes.schema, write_options=write_options
+            ) as writer:
+                for lote in lotes:
+                    writer.write_batch(lote)

@@ -1,5 +1,4 @@
 import pyarrow as pa
-from ..connector import raw_sql
 from textwrap import dedent
 from typing import Any, Literal, Callable
 from .datatypes import map_typs
@@ -7,10 +6,11 @@ from operator import itemgetter
 import sqlglot as sg
 import sqlglot.expressions as sge
 from ..utils import is_query, rename_col
+from pyodbc import Cursor
 
 
 def schema_query_or_table(
-    driver: str, name: str, database: str, schema: str
+    cursor: Cursor, name: str, database: str, schema: str
 ) -> list[tuple]:
     query = is_query(name)
 
@@ -43,8 +43,7 @@ def schema_query_or_table(
             .sql("tsql")
         )
 
-    with raw_sql(driver) as cur:
-        rst = cur.execute(stmt).fetchall()
+    rst = cursor.execute(stmt).fetchall()
 
     if query:
 
@@ -64,8 +63,10 @@ def schema_query_or_table(
     return rst
 
 
-def get_schema(driver: str, name: str, database: str, schema: str = "dbo") -> Callable:
-    rst = schema_query_or_table(driver, name, database, schema)
+def get_schema(
+    cursor: Cursor, name: str, database: str, schema: str = "dbo"
+) -> Callable:
+    rst = schema_query_or_table(cursor, name, database, schema)
 
     def tipo(retorno: Literal["sh", "st", "lt"]) -> Any:
         if retorno == "lt":
